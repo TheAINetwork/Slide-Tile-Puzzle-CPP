@@ -2,21 +2,43 @@
 #include <sys/resource.h>
 #define DEBUG if(0)
 #define lli long long int
-#define vv vector<vector<int> >
-#define ele pair<vv, pair<int, double> >
 using namespace std;
-int n, sqn;
-vv table;
-set<string> visitedSet;
-deque<pair<vv, int> > q;
-bool compare(ele a, ele b)
+
+class State
 {
-  return(a.second.second > b.second.second);
-}
-priority_queue<ele, vector<ele >, function<bool(ele, ele)> > pq(compare);
+  public:
+  vector<vector<int> > table;
+  int step, blackI, blackJ;
+  double heuristic;
+
+  State(vector<vector<int> > t, int bi, int bj, int s, double h)
+  {
+    table = t, blackI = bi, blackJ = bj, step = s, heuristic = h;
+  }
+
+  State(vector<vector<int> > t, int bi, int bj, int s)
+  {
+    table = t, blackI = bi, blackJ = bj, step = s;
+  }
+
+  bool operator()(const State& a, const State& b)
+  {
+    return(a.heuristic < b.heuristic);
+  }
+
+  bool operator<(const State& a) const
+  {
+    return(heuristic > a.heuristic);
+  }
+};
+
+int n, sqn;
+vector<vector<int> > table;
+set<string> visitedSet;
+deque<State> q;
+priority_queue<State> pq;
 int dy[4] = {-1, 0, 1, 0}, dx[4] = {0, 1, 0, -1};
 int minSteps = -1, scrambleSteps = 1000;
-
 
 void printTable()
 {
@@ -38,7 +60,7 @@ int valid(int i, int j)
   return(!(i < 0 || i >= n || j < 0 || j >= n));
 }
 
-string state()
+string stateHash()
 {
   string aux = "";
   for (int i = 0; i < n; i ++)
@@ -52,7 +74,9 @@ string state()
 
 void scramble()
 {
-  for (int i = 0, k = 1; i < n; i ++) for (int j = 0; j < n; j ++, k ++) table[i][j] = k; table[n - 1][n - 1] = 0;
+  for (int i = 0, k = 1; i < n; i ++) for (int j = 0; j < n; j ++, k ++)
+    table[i][j] = k;
+  table[n - 1][n - 1] = 0;
 
   int s = scrambleSteps, i = n - 1, j = n - 1;
   while (s --)
@@ -76,7 +100,7 @@ int solved()
 
 int dfsRecursive(int i, int j, int now)
 {
-  // DEBUG { printf("hash: %s\n", state()); printTable(); }
+  // DEBUG { printf("hash: %s\n", stateHash()); printTable(); }
   if (i == n - 1 && j == n - 1 && solved())
   {
     minSteps = now;
@@ -87,10 +111,10 @@ int dfsRecursive(int i, int j, int now)
     if (valid(i + dy[k], j + dx[k]))
     {
       swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
-      string nowState = state();
-      if (!visitedSet.count(nowState))
+      string nowStateHash = stateHash();
+      if (!visitedSet.count(nowStateHash))
       {
-        visitedSet.insert(nowState);
+        visitedSet.insert(nowStateHash);
         if (dfsRecursive(i + dy[k], j + dx[k], now + 1)) return(1);
       }
       swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
@@ -100,23 +124,22 @@ int dfsRecursive(int i, int j, int now)
 
 void dfs(int i, int j)
 {
-  q.push_front({table, 0});
+  q.push_front(State(table, i, j, 0));
   while (!q.empty())
   {
-    table = q.front().first; minSteps = q.front().second; q.pop_front();
-    for (int l = 0; l < n; l ++) for (int m = 0; m < n; m ++) if (table[l][m] == 0) i = l, j = m;
-    // printTable(); printf("\n");
+    table = q.front().table, minSteps = q.front().step, i = q.front().blackI, j = q.front().blackJ;
+    q.pop_front();
     if (solved()) break;
 
     for (int k = 0; k < 4; k ++)
       if (valid(i + dy[k], j + dx[k]))
       {
         swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
-        string nowState = state();
-        if (!visitedSet.count(nowState))
+        string nowStateHash = stateHash();
+        if (!visitedSet.count(nowStateHash))
         {
-          visitedSet.insert(nowState);
-          q.push_front({table, minSteps + 1});
+          visitedSet.insert(nowStateHash);
+          q.push_front(State(table, i + dy[k], j + dx[k], minSteps + 1));
         }
         swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
       }
@@ -126,22 +149,22 @@ void dfs(int i, int j)
 
 void bfs(int i, int j)
 {
-  q.push_back({table, 0});
+  q.push_back(State(table, i, j, 0));
   while (!q.empty())
   {
-    table = q.front().first; minSteps = q.front().second; q.pop_front();
-    for (int l = 0; l < n; l ++) for (int m = 0; m < n; m ++) if (table[l][m] == 0) i = l, j = m;
+    table = q.front().table, minSteps = q.front().step, i = q.front().blackI, j = q.front().blackJ;
+    q.pop_front();
     if (solved()) break;
 
     for (int k = 0; k < 4; k ++)
       if (valid(i + dy[k], j + dx[k]))
       {
         swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
-        string nowState = state();
-        if (!visitedSet.count(nowState))
+        string nowStateHash = stateHash();
+        if (!visitedSet.count(nowStateHash))
         {
-          visitedSet.insert(nowState);
-          q.push_back({table, minSteps + 1});
+          visitedSet.insert(nowStateHash);
+          q.push_back(State(table, i + dy[k], j + dx[k], minSteps + 1));
         }
         swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
       }
@@ -174,7 +197,7 @@ double euclideanDistance()
   return(dist);
 }
 
-double newEuclideanDistance()
+double newHeuristic()
 {
   double dist = 0;
   for (int i = 0; i < n; i ++)
@@ -182,29 +205,29 @@ double newEuclideanDistance()
     {
       if (table[i][j] == 0) continue;
       int at = table[i][j] - 1;
-      dist += (sqSize - table[i][j] + 1) * sqrt(pow(at / n - i, 2) + pow(at % n - j, 2));
+      dist += sqrt(pow(at / n - i, 2) + pow(at % n - j, 2));
     }
   return(dist);
 }
 
 void aStar(int i, int j, double (*heuristic)())
 {
-  pq.push({table, {0, heuristic()}});
+  pq.push(State(table, i, j, 0, heuristic()));
   while (!pq.empty())
   {
-    table = pq.top().first; minSteps = pq.top().second.first; pq.pop();
-    for (int l = 0; l < n; l ++) for (int m = 0; m < n; m ++) if (table[l][m] == 0) i = l, j = m;
+    table = pq.top().table, minSteps = pq.top().step, i = pq.top().blackI, j = pq.top().blackJ;
+    pq.pop();
     if (solved()) break;
 
     for (int k = 0; k < 4; k ++)
       if (valid(i + dy[k], j + dx[k]))
       {
         swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
-        string nowState = state();
-        if (!visitedSet.count(nowState))
+        string nowStateHash = stateHash();
+        if (!visitedSet.count(nowStateHash))
         {
-          visitedSet.insert(nowState);
-          pq.push({table, {minSteps + 1, heuristic()}});
+          visitedSet.insert(nowStateHash);
+          pq.push(State(table, i + dy[k], j + dx[k], minSteps + 1, heuristic()));
         }
         swap(&table[i][j], &table[i + dy[k]][j + dx[k]]);
       }
@@ -221,12 +244,13 @@ int main()
   srand(time(NULL));
 
   scanf("%d", &n); sqn = 9; int kk = 1;
-  for (int i = 0; i < n; i ++) table.push_back(vector<int>(n)); int aa = 0, bb = 0, ss;
+  for (int i = 0; i < n; i ++) table.push_back(vector<int>(n));
+  int aa = 0, bb = 0, ss;
   while (kk)
   {
     scramble();
     printTable();
-    vv aux = table;
+    vector<vector<int> > aux = table;
     int si, sj;
     for (int i = 0; i < n; i ++) for (int j = 0; j < n; j ++) if (table[i][j] == 0) si = i, sj = j;
 
@@ -258,14 +282,14 @@ int main()
     printf("\tTook %d steps\n\n", minSteps);
     ss = minSteps;
 
-    table = aux;
-    printf("A* (new):\n");
-    visitedSet.clear();
-    aStar(si, sj, newEuclideanDistance);
-    printf("\tReached %ld different states\n", visitedSet.size());
-    printf("\tTook %d steps\n\n", minSteps);
-    if (minSteps < ss) aa ++; else bb ++;
-    printf("old: %d, new: %d\n", bb, aa);
+    // table = aux;
+    // printf("A* (new):\n");
+    // visitedSet.clear();
+    // aStar(si, sj, newEuclideanDistance);
+    // printf("\tReached %ld different states\n", visitedSet.size());
+    // printf("\tTook %d steps\n\n", minSteps);
+    // if (minSteps < ss) aa ++; else bb ++;
+    // printf("old: %d, new: %d\n", bb, aa);
   }
   return(0);
 }
