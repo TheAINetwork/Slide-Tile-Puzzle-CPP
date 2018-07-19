@@ -200,12 +200,12 @@ double euclideanDistance()
 double newHeuristic()
 {
   double dist = 0;
-  for (int i = 0; i < n; i ++)
-    for (int j = 0; j < n; j ++)
+  for (int i = 0, k = 1; i < n; i ++)
+    for (int j = 0; j < n; j ++, k ++)
     {
       if (table[i][j] == 0) continue;
       int at = table[i][j] - 1;
-      dist += sqrt(pow(at / n - i, 2) + pow(at % n - j, 2));
+      dist += pow(table[i][j] - k, 2);
     }
   return(dist);
 }
@@ -285,7 +285,7 @@ int main()
     // table = aux;
     // printf("A* (new):\n");
     // visitedSet.clear();
-    // aStar(si, sj, newEuclideanDistance);
+    // aStar(si, sj, newHeuristic);
     // printf("\tReached %ld different states\n", visitedSet.size());
     // printf("\tTook %d steps\n\n", minSteps);
     // if (minSteps < ss) aa ++; else bb ++;
