@@ -14,7 +14,8 @@ int main(int argc, char **argv)
 {
   init;
 
-  size = atoi(argv[1]); int runs = atoi(argv[2]), verbose = atoi(argv[3]);
+  size = atoi(argv[1]); int runs = atoi(argv[2]), verbose = atoi(argv[3]); double prevWeight = atof(argv[4]);
+  for (int i = 5; i < argc; i ++) weights[i - 5] = atoi(argv[i]);
   for (int i = 0; i < size; i ++) table.push_back(vector<int>(size));
   int aa = 0, bb = 0, aaa = 0, bbb = 0, ss, sss;
   while (runs --)
@@ -55,13 +56,13 @@ int main(int argc, char **argv)
 
     table = aux;
     if (verbose) printf("A* (new):\n");
-    aStar(si, sj, euclideanDistance, 0.01);
+    aStar(si, sj, newHeuristic, prevWeight);
     if (verbose) printStatistics();
     ss = minSteps, sss = visitedSet.size();
 
     table = aux;
-    if (verbose) printf("IDA* (euclideanDistance):\n");
-    aStar(si, sj, euclideanDistance, 0);
+    if (verbose) printf("A* (euclideanDistance):\n");
+    aStar(si, sj, newHeuristic, 0);
     if (verbose) printStatistics();
 
     if (minSteps < ss) aa ++; else bb ++;
@@ -71,6 +72,6 @@ int main(int argc, char **argv)
   }
   printf("minSteps: old: %d, new: %d\n", aa, bb);
   printf("states  : old: %d, new: %d\n", aaa, bbb);
-  
+
   return(0);
 }

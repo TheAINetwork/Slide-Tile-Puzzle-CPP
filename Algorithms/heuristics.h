@@ -1,3 +1,5 @@
+int weights[10];
+
 double manhattanDistance()
 {
   int dist = 0;
@@ -23,7 +25,16 @@ double euclideanDistance()
   return(dist);
 }
 
+double wrongPieces()
+{
+  double dist = 0;
+  for (int i = 0; i < size; i ++)
+    for (int j = 0; j < size; j ++)
+      dist += table[i][j] != (i*size + j);
+  return(dist);
+}
+
 double newHeuristic()
 {
-  return(euclideanDistance() + manhattanDistance());
+  return(euclideanDistance() * manhattanDistance() * wrongPieces());
 }
