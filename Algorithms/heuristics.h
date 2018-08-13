@@ -1,13 +1,13 @@
-int weights[10];
+double weights[10];
 
 double manhattanDistance()
 {
   int dist = 0;
-  for (int i = 0; i < size; i ++)
-    for (int j = 0; j < size; j ++)
+  for (int i = 0; i < n; i ++)
+    for (int j = 0; j < n; j ++)
     {
       int at = table[i][j] - 1;
-      dist += abs(at / size - i) + abs(at % size - j);
+      dist += abs(at / n - i) + abs(at % n - j);
     }
   return(dist);
 }
@@ -15,12 +15,12 @@ double manhattanDistance()
 double euclideanDistance()
 {
   double dist = 0;
-  for (int i = 0; i < size; i ++)
-    for (int j = 0; j < size; j ++)
+  for (int i = 0; i < n; i ++)
+    for (int j = 0; j < n; j ++)
     {
       if (table[i][j] == 0) continue;
       int at = table[i][j] - 1;
-      dist += sqrt(pow(at / size - i, 2) + pow(at % size - j, 2)); //sqrt
+      dist += sqrt(pow(at / n - i, 2) + pow(at % n - j, 2)); //sqrt
     }
   return(dist);
 }
@@ -28,13 +28,13 @@ double euclideanDistance()
 double wrongPieces()
 {
   double dist = 0;
-  for (int i = 0; i < size; i ++)
-    for (int j = 0; j < size; j ++)
-      dist += table[i][j] != (i*size + j);
+  for (int i = 0; i < n; i ++)
+    for (int j = 0; j < n; j ++)
+      dist += table[i][j] != (i*n + j);
   return(dist);
 }
 
 double newHeuristic()
 {
-  return(euclideanDistance() * manhattanDistance() * wrongPieces());
+  return(weights[0] * euclideanDistance() + weights[1] * manhattanDistance() + weights[2] + wrongPieces());
 }
