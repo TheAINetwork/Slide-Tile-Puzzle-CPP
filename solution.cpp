@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     // printf("BFS:\n");
     // visitedSet.clear();
     // bfs(si, sj);
-    // printf("\tReached %ld different states\n", visitedSet.n());
+    // printf("\tReached %ld different states\n", visitedSet.size());
     // printf("\tTook %d steps\n\n", minSteps);
 
     table = aux;

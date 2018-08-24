@@ -29,12 +29,30 @@ double wrongPieces()
 {
   double dist = 0;
   for (int i = 0; i < n; i ++)
+  {
+    int diff = 0;
     for (int j = 0; j < n; j ++)
-      dist += table[i][j] != (i*n + j);
+      diff += table[i][j] != (i*n + j);
+    if (diff) dist += n*(i + 1);
+    if (diff) break;
+  }
+  return(dist);
+}
+
+double lolPieces()
+{
+  double dist = 0;
+  for (int i = 0; i < n; i ++)
+  {
+    int diff = 0;
+    for (int j = 0; j < n; j ++)
+      diff += table[i][j] != (i*n + j);
+    if (diff) dist += n;
+  }
   return(dist);
 }
 
 double newHeuristic()
 {
-  return(weights[0] * euclideanDistance() + weights[1] * manhattanDistance() + weights[2] + wrongPieces());
+  return(weights[0] * euclideanDistance() + weights[1] * manhattanDistance() + weights[2] * wrongPieces() + 0 * weights[3] * lolPieces());
 }

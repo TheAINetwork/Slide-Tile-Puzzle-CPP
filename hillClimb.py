@@ -4,7 +4,7 @@ os.system("g++-7 solution.cpp -o test -std=c++17 -O2")
 size = 3
 simulationSize = 100
 interval = 100
-prevdx, dx, amount = 0.5, 0.5, 100
+prevdx, dx, amount = 0.0, 0.5, 100
 
 def readResult():
   f = open("result", "r")
@@ -36,7 +36,7 @@ def shift(number):
 
 def generateNeighbors(node):
   configSet = set()
-  for i in range(amount):
+  while (len(configSet) < amount):
     configSet.add(tuple(map(shift, node)))
   return(configSet)
 
@@ -45,6 +45,7 @@ def hillClimb():
   node = [0, 1, 1, 1]
   episodes = 100
   while (episodes):
+    print(episodes)
     configSet = generateNeighbors(node)
     for i, config in enumerate(configSet):
       if (config[1] == 0 and config[2] == 0 and config[3] == 0): continue
@@ -52,7 +53,7 @@ def hillClimb():
       run(best, 0, config)
     if (prevBest == best[2][1]):
       stuck += 1
-      dx += prevdx
+      if (stuck < 11): dx += prevdx
     else:
       stuck = 0
       dx = prevdx
@@ -60,6 +61,7 @@ def hillClimb():
     print(best[2], stuck)
     node = best[2][2]
     episodes -= 1
+  return(best)
 
 def bestPrev():
   best = [[-1, -1e20] for i in range(3)]
